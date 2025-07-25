@@ -1,0 +1,46 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'BPEM Details'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.usageType:{
+    serviceQuality: #X,
+    sizeCategory: #S,
+    dataClass: #MIXED
+}
+define view entity zgen_i_bpem_details
+  as select from emma_case
+{
+  key casenr       as Casenr,
+      case_guid    as CaseGuid,
+      runid        as Runid,
+      intnr        as Intnr,
+      logsys       as Logsys,
+      bpguid       as Bpguid,
+      bpcode       as Bpcode,
+      ctype        as Ctype,
+      status       as Status,
+      ccat         as Ccat,
+      prio         as Prio,
+      prioorig     as Prioorig,
+      brgru        as Brgru,
+      mainobjtype  as Mainobjtype,
+      mainobjkey   as Mainobjkey,
+      orig_date    as OrigDate,
+      orig_time    as OrigTime,
+      currproc     as Currproc,
+      reacode      as Reacode,
+      cancode      as Cancode,
+      prevproc     as Prevproc,
+      due_date     as DueDate,
+      due_time     as DueTime,
+      xnote        as Xnote,
+      casetxt      as Casetxt,
+      fwm          as Fwm,
+      custstatus   as Custstatus,
+      created_date as CreatedDate,
+      created_time as CreatedTime,
+      created_by   as CreatedBy,
+      changed_date as ChangedDate,
+      changed_time as ChangedTime,
+      changed_by   as ChangedBy
+}

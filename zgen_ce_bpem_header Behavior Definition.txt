@@ -1,0 +1,52 @@
+unmanaged implementation in class zbp_gen_ce_bpem_header unique;
+strict ( 2 ); //Uncomment this line in order to enable strict mode 2. The strict mode has two variants (strict(1), strict(2)) and is prerequisite to be future proof regarding syntax and to be able to release your BO.
+
+define behavior for zgen_ce_bpem_header alias BPEMHeader
+//late numbering
+lock master
+authorization master ( instance )
+//etag master <field_name>
+{
+  create;
+  update;
+  delete;
+  association _BPEMCaseText { create; }
+  association _BPEMMessages { create; }
+  association _BPEMObject { create; }
+}
+
+define behavior for zgen_ce_bpem_CASE_TEXT alias BPEMCaseText
+//late numbering
+lock dependent by _BPEMHeader
+authorization dependent by _BPEMHeader
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) BPEM_No;
+  association _BPEMHeader;
+}
+
+define behavior for zgen_ce_bpem_MESSAGES alias BPEMMessages
+//late numbering
+lock dependent by _BPEMHeader
+authorization dependent by _BPEMHeader
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) BPEM_No;
+  association _BPEMHeader;
+}
+
+define behavior for zgen_ce_bpem_object alias BPEMObject
+//late numbering
+lock dependent by _BPEMHeader
+authorization dependent by _BPEMHeader
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) BPEM_No;
+  association _BPEMHeader;
+}

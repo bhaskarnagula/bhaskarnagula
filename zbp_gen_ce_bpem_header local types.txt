@@ -1,0 +1,559 @@
+CLASS lhc_buffer DEFINITION.
+  PUBLIC SECTION.
+    CLASS-DATA: gs_header    TYPE zgen_ce_bpem_header,
+                gt_objects   TYPE STANDARD TABLE OF zgen_ce_bpem_object,
+                gt_message   TYPE STANDARD TABLE OF zgen_ce_bpem_messages,
+                gt_case_text TYPE STANDARD TABLE OF zgen_ce_bpem_case_text.
+
+    CLASS-DATA: gv_cba_message_exec TYPE abap_boolean,
+                gv_cba_text_exec    TYPE abap_boolean,
+                gv_cba_object_exec  TYPE abap_boolean.
+ENDCLASS.
+CLASS lhc_BPEMHeader DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR BPEMHeader RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE BPEMHeader.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE BPEMHeader.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE BPEMHeader.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ BPEMHeader RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK BPEMHeader.
+
+    METHODS rba_Bpemcasetext FOR READ
+      IMPORTING keys_rba FOR READ BPEMHeader\_Bpemcasetext FULL result_requested RESULT result LINK association_links.
+
+    METHODS rba_Bpemmessages FOR READ
+      IMPORTING keys_rba FOR READ BPEMHeader\_Bpemmessages FULL result_requested RESULT result LINK association_links.
+
+    METHODS rba_Bpemobject FOR READ
+      IMPORTING keys_rba FOR READ BPEMHeader\_Bpemobject FULL result_requested RESULT result LINK association_links.
+
+    METHODS cba_Bpemcasetext FOR MODIFY
+      IMPORTING entities_cba FOR CREATE BPEMHeader\_Bpemcasetext.
+
+    METHODS cba_Bpemmessages FOR MODIFY
+      IMPORTING entities_cba FOR CREATE BPEMHeader\_Bpemmessages.
+
+    METHODS cba_Bpemobject FOR MODIFY
+      IMPORTING entities_cba FOR CREATE BPEMHeader\_Bpemobject.
+
+    METHODS call_bapi
+      EXPORTING return      TYPE zcl_gen_utilities=>ty_t_bapiret2
+      RETURNING VALUE(case) TYPE zcl_gen_utilities=>zemma_cnr.
+
+ENDCLASS.
+
+CLASS lhc_BPEMHeader IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD create.
+    READ TABLE entities INTO DATA(ls_entities) INDEX 1.
+    IF sy-subrc EQ 0.
+      lhc_buffer=>gs_header = CORRESPONDING #( ls_entities ).
+    ENDIF.
+
+    IF lhc_buffer=>gs_header-mainobjtype IS INITIAL.
+      SELECT SINGLE Mainobjtype
+      FROM zgen_i_bpem_details
+      WHERE ccat = @lhc_buffer=>gs_header-ccat
+      INTO @lhc_buffer=>gs_header-mainobjtype.
+    ENDIF.
+
+    lhc_buffer=>gv_cba_object_exec = abap_false.
+    lhc_buffer=>gv_cba_text_exec = abap_false.
+    lhc_buffer=>gv_cba_message_exec = abap_false.
+
+    IF lhc_buffer=>gs_header-bpem_objects_flag EQ lhc_buffer=>gv_cba_object_exec
+    AND lhc_buffer=>gs_header-bpem_case_text_flag EQ lhc_buffer=>gv_cba_text_exec
+    AND lhc_buffer=>gs_header-bpem_message_flag EQ lhc_buffer=>gv_cba_message_exec
+    AND lhc_buffer=>gs_header-BPEM_No IS INITIAL.
+
+      call_bapi(
+        IMPORTING
+          return = DATA(lt_return)
+        RECEIVING
+          case   = lhc_buffer=>gs_header-BPEM_No
+      ).
+
+      IF lhc_buffer=>gs_header-BPEM_No IS NOT INITIAL.
+        APPEND VALUE #( %cid = ls_entities-%cid
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemheader.
+      ELSE.
+        APPEND VALUE #( %key = ls_entities-%key ) TO failed-bpemheader.
+      ENDIF.
+
+      LOOP AT lt_return INTO DATA(ls_return_msg).
+        APPEND VALUE #( %key = lhc_buffer=>gs_header-BPEM_No
+                        %msg = new_message( id = ls_return_msg-id
+                                            number = ls_return_msg-number
+                                            severity  = COND #( WHEN ls_return_msg-type = zcl_gen_utilities=>gc_e THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_x THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_w THEN if_abap_behv_message=>severity-warning
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_i THEN if_abap_behv_message=>severity-information
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_s THEN if_abap_behv_message=>severity-success
+                                                              )
+                                            v1 = ls_return_msg-message_v1
+                                            v2 = ls_return_msg-message_v2
+                                            v3 = ls_return_msg-message_v3
+                                            v4 = ls_return_msg-message_v4  )
+                      ) TO reported-bpemheader.
+
+      ENDLOOP.
+
+    ENDIF.
+
+*After this method the sequence are as follows
+*1 Method cba_bpem_case_text
+*2 Method cba_bpem_message
+*3 Method cba_bpem_objects
+  ENDMETHOD.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD lock.
+  ENDMETHOD.
+
+  METHOD rba_Bpemcasetext.
+  ENDMETHOD.
+
+  METHOD rba_Bpemmessages.
+  ENDMETHOD.
+
+  METHOD rba_Bpemobject.
+  ENDMETHOD.
+
+  METHOD cba_Bpemcasetext.
+*Sequence of association methods as follows
+*1 Method cba_bpem_case_text
+*2 Method cba_bpem_message
+*3 Method cba_bpem_objects
+
+    READ TABLE entities_cba INTO DATA(ls_entities_cba) INDEX 1.
+    CHECK sy-subrc EQ 0.
+    lhc_buffer=>gt_case_text = VALUE #( FOR ls_target_cba IN ls_entities_cba-%target
+                                    ( BPEM_No = ls_entities_cba-BPEM_No
+                                      tdformat = ls_target_cba-tdformat
+                                      tdline = ls_target_cba-tdline ) ).
+
+    CHECK  lhc_buffer=>gt_case_text IS NOT INITIAL.
+
+    lhc_buffer=>gv_cba_text_exec = abap_true.
+
+    IF lhc_buffer=>gv_cba_text_exec NE lhc_buffer=>gs_header-bpem_case_text_flag.
+
+      APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+
+*      Please pass & as true
+      APPEND VALUE #( %key = ls_entities_cba-%key
+                      %msg = new_message( id = '000'
+                                          number = '077'
+                                          severity  = if_abap_behv_message=>severity-error
+                                          v1 = 'BPEM_CASE_TEXT_FLAG' )
+                   ) TO reported-bpemheader.
+      RETURN.
+    ENDIF.
+
+    IF lhc_buffer=>gs_header-bpem_objects_flag EQ lhc_buffer=>gv_cba_object_exec
+        AND lhc_buffer=>gs_header-bpem_case_text_flag EQ lhc_buffer=>gv_cba_text_exec
+        AND lhc_buffer=>gs_header-bpem_message_flag EQ lhc_buffer=>gv_cba_message_exec
+        AND lhc_buffer=>gs_header-BPEM_No IS INITIAL.
+
+      call_bapi(
+        IMPORTING
+          return = DATA(lt_return)
+        RECEIVING
+          case   = lhc_buffer=>gs_header-BPEM_No
+      ).
+
+      IF lhc_buffer=>gs_header-BPEM_No IS NOT INITIAL.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemheader.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemcasetext.
+      ELSE.
+        APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+      ENDIF.
+
+      LOOP AT lt_return INTO DATA(ls_return_msg).
+        APPEND VALUE #( %key = lhc_buffer=>gs_header-BPEM_No
+                        %msg = new_message( id = ls_return_msg-id
+                                            number = ls_return_msg-number
+                                            severity  = COND #( WHEN ls_return_msg-type = zcl_gen_utilities=>gc_e THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_x THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_w THEN if_abap_behv_message=>severity-warning
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_i THEN if_abap_behv_message=>severity-information
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_s THEN if_abap_behv_message=>severity-success
+                                                              )
+                                            v1 = ls_return_msg-message_v1
+                                            v2 = ls_return_msg-message_v2
+                                            v3 = ls_return_msg-message_v3
+                                            v4 = ls_return_msg-message_v4  )
+                      ) TO reported-bpemheader.
+
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD cba_Bpemmessages.
+*Sequence of association methods as follows
+*1 Method cba_bpem_case_text
+*2 Method cba_bpem_message
+*3 Method cba_bpem_objects
+
+    READ TABLE entities_cba INTO DATA(ls_entities_cba) INDEX 1.
+    CHECK sy-subrc EQ 0.
+    lhc_buffer=>gt_message = VALUE #( FOR ls_target_cba IN ls_entities_cba-%target
+                                  ( BPEM_No  = ls_entities_cba-BPEM_No
+                                    msgid = ls_target_cba-msgid
+                                    msgno = ls_target_cba-msgno
+                                    msgv1 = ls_target_cba-msgv1
+                                    msgv2 = ls_target_cba-msgv2
+                                    msgv3 = ls_target_cba-msgv3
+                                    msgv4 = ls_target_cba-msgv4
+                                    hidden = ls_target_cba-hidden ) ).
+
+    CHECK lhc_buffer=>gt_message IS NOT INITIAL.
+
+    lhc_buffer=>gv_cba_message_exec = abap_true.
+
+    IF lhc_buffer=>gv_cba_message_exec NE lhc_buffer=>gs_header-bpem_message_flag.
+
+      APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+
+*      Please pass & as true
+      APPEND VALUE #( %key = ls_entities_cba-%key
+                      %msg = new_message( id = '000'
+                                          number = '077'
+                                          severity  = if_abap_behv_message=>severity-error
+                                          v1 = 'BPEM_MESSAGE_FLAG' )
+                   ) TO reported-bpemheader.
+      RETURN.
+    ENDIF.
+
+    IF lhc_buffer=>gs_header-bpem_objects_flag EQ lhc_buffer=>gv_cba_object_exec
+        AND lhc_buffer=>gs_header-bpem_case_text_flag EQ lhc_buffer=>gv_cba_text_exec
+        AND lhc_buffer=>gs_header-bpem_message_flag EQ lhc_buffer=>gv_cba_message_exec
+        AND lhc_buffer=>gs_header-BPEM_No IS INITIAL.
+
+      call_bapi(
+        IMPORTING
+          return = DATA(lt_return)
+        RECEIVING
+          case   = lhc_buffer=>gs_header-BPEM_No
+      ).
+
+      IF lhc_buffer=>gs_header-BPEM_No IS NOT INITIAL.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemheader.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemmessages.
+      ELSE.
+        APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+      ENDIF.
+
+      LOOP AT lt_return INTO DATA(ls_return_msg).
+        APPEND VALUE #( %key = lhc_buffer=>gs_header-BPEM_No
+                        %msg = new_message( id = ls_return_msg-id
+                                            number = ls_return_msg-number
+                                            severity  = COND #( WHEN ls_return_msg-type = zcl_gen_utilities=>gc_e THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_x THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_w THEN if_abap_behv_message=>severity-warning
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_i THEN if_abap_behv_message=>severity-information
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_s THEN if_abap_behv_message=>severity-success
+                                                              )
+                                            v1 = ls_return_msg-message_v1
+                                            v2 = ls_return_msg-message_v2
+                                            v3 = ls_return_msg-message_v3
+                                            v4 = ls_return_msg-message_v4  )
+                      ) TO reported-bpemheader.
+
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD cba_Bpemobject.
+*Sequence of association methods as follows
+*1 Method cba_bpem_case_text
+*2 Method cba_bpem_message
+*3 Method cba_bpem_objects
+
+    READ TABLE entities_cba INTO DATA(ls_entities_cba) INDEX 1.
+    CHECK sy-subrc EQ 0.
+    lhc_buffer=>gt_objects = VALUE #( FOR ls_target_cba IN ls_entities_cba-%target
+                                    ( BPEM_No = ls_entities_cba-BPEM_No
+                                      id = ls_target_cba-id
+                                      celemname = ls_target_cba-celemname
+                                      refobjtype = ls_target_cba-refobjtype
+                                      refstruct = ls_target_cba-refstruct
+                                      reffield = ls_target_cba-reffield
+                                      typename = ls_target_cba-typename
+                                      hidden = ls_target_cba-hidden ) ).
+
+    CHECK lhc_buffer=>gt_objects IS NOT INITIAL.
+
+    lhc_buffer=>gv_cba_object_exec = abap_true.
+
+    IF lhc_buffer=>gv_cba_object_exec NE lhc_buffer=>gs_header-bpem_objects_flag.
+
+      APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+
+*      Please pass & as true
+      APPEND VALUE #( %key = ls_entities_cba-%key
+                      %msg = new_message( id = '000'
+                                          number = '077'
+                                          severity  = if_abap_behv_message=>severity-error
+                                          v1 = 'BPEM_OBJECTS_FLAG' )
+                   ) TO reported-bpemheader.
+      RETURN.
+    ENDIF.
+
+    IF lhc_buffer=>gs_header-bpem_objects_flag EQ lhc_buffer=>gv_cba_object_exec
+        AND lhc_buffer=>gs_header-bpem_case_text_flag EQ lhc_buffer=>gv_cba_text_exec
+        AND lhc_buffer=>gs_header-bpem_message_flag EQ lhc_buffer=>gv_cba_message_exec
+        AND lhc_buffer=>gs_header-BPEM_No IS INITIAL.
+
+      call_bapi(
+        IMPORTING
+          return = DATA(lt_return)
+        RECEIVING
+          case   = lhc_buffer=>gs_header-BPEM_No
+      ).
+
+      IF lhc_buffer=>gs_header-BPEM_No IS NOT INITIAL.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemheader.
+        APPEND VALUE #( %cid = ls_entities_cba-%cid_ref
+                        BPEM_No = lhc_buffer=>gs_header-BPEM_No ) TO mapped-bpemobject.
+      ELSE.
+        APPEND VALUE #( %key = ls_entities_cba-%key ) TO failed-bpemheader.
+      ENDIF.
+
+      LOOP AT lt_return INTO DATA(ls_return_msg).
+        APPEND VALUE #( %key = lhc_buffer=>gs_header-BPEM_No
+                        %msg = new_message( id = ls_return_msg-id
+                                            number = ls_return_msg-number
+                                            severity  = COND #( WHEN ls_return_msg-type = zcl_gen_utilities=>gc_e THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_x THEN if_abap_behv_message=>severity-error
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_w THEN if_abap_behv_message=>severity-warning
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_i THEN if_abap_behv_message=>severity-information
+                                                                WHEN ls_return_msg-type = zcl_gen_utilities=>gc_s THEN if_abap_behv_message=>severity-success
+                                                              )
+                                            v1 = ls_return_msg-message_v1
+                                            v2 = ls_return_msg-message_v2
+                                            v3 = ls_return_msg-message_v3
+                                            v4 = ls_return_msg-message_v4  )
+                      ) TO reported-bpemheader.
+
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+  METHOD call_bapi.
+
+    DATA: lc_3 TYPE c VALUE 3,
+          lc_4 TYPE c VALUE 4.
+
+    DATA(ls_case_create) = CORRESPONDING zcl_gen_utilities=>ty_bapi_emma_case_create( lhc_buffer=>gs_header ).
+    DATA(lt_messages) = CORRESPONDING zcl_gen_utilities=>ty_t_BAPI_EMMA_MSG_LINK( lhc_buffer=>gt_message ).
+    DATA(lt_objects) = CORRESPONDING zcl_gen_utilities=>ty_t_BAPI_EMMA_CASE_OBJECT( lhc_buffer=>gt_objects ).
+    DATA(lt_case_text) = CORRESPONDING zcl_gen_utilities=>ty_t_bapi_emma_tline( lhc_buffer=>gt_case_text ).
+
+    DATA(lv_bpartner) = ls_case_create-mainobjkey.
+
+
+    case = zcl_bapi_bpem=>call_rfc_create_bpem(
+                      EXPORTING
+                        case_create = ls_case_create
+                        test_run    = lhc_buffer=>gs_header-testrun
+                       " case_create_extra = ls_case_create_extra
+                        "message_mode      = lhc_buffer=>gs_header-message_mode
+                        "check_mode  = lhc_buffer=>gs_header-check_mode
+                      " forward     = lhc_buffer=>gs_header-forward
+*                       write_change_doc  = lhc_buffer=>gs_header-write_change_doc
+                      CHANGING
+                        objects     = lt_objects
+                        case_text   = lt_case_text
+                        messages    = lt_messages
+                        return      = return
+    ).
+
+    READ TABLE return  ASSIGNING FIELD-SYMBOL(<lfs_return>) WITH KEY type = 'E' id = 'BAPI'  number = '001'. "#EC CI_STDSEQ
+    IF sy-subrc EQ 0.
+
+*** Check if unresolved BPEM already exists
+      SELECT SINGLE Casenr
+        FROM zgen_i_bpem_details AS ec
+       WHERE mainobjkey = @lv_bpartner
+         AND Mainobjtype = @ls_case_create-mainobjtype
+         AND ccat = @ls_case_create-ccat
+         AND status NE @lc_3
+         AND status NE @lc_4
+      INTO @DATA(lv_Casenr).
+      IF sy-subrc EQ 0.
+*      Unresolved BPEM exists with case number &1
+        <lfs_return>-id = '000'.
+        <lfs_return>-number = 178.
+        <lfs_return>-message_v1 = lv_Casenr.
+        MESSAGE e178(z) INTO <lfs_return>-message WITH lv_Casenr.
+      ELSE.
+*      BPEM creation unsuccessful
+        <lfs_return>-id = '000'.
+        <lfs_return>-number = 179.
+        MESSAGE e179(z) INTO <lfs_return>-message.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lhc_BPEMCaseText DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE BPEMCaseText.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE BPEMCaseText.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ BPEMCaseText RESULT result.
+
+    METHODS rba_Bpemheader FOR READ
+      IMPORTING keys_rba FOR READ BPEMCaseText\_Bpemheader FULL result_requested RESULT result LINK association_links.
+
+ENDCLASS.
+
+CLASS lhc_BPEMCaseText IMPLEMENTATION.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Bpemheader.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_BPEMMessages DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE BPEMMessages.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE BPEMMessages.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ BPEMMessages RESULT result.
+
+    METHODS rba_Bpemheader FOR READ
+      IMPORTING keys_rba FOR READ BPEMMessages\_Bpemheader FULL result_requested RESULT result LINK association_links.
+
+ENDCLASS.
+
+CLASS lhc_BPEMMessages IMPLEMENTATION.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Bpemheader.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_BPEMObject DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE BPEMObject.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE BPEMObject.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ BPEMObject RESULT result.
+
+    METHODS rba_Bpemheader FOR READ
+      IMPORTING keys_rba FOR READ BPEMObject\_Bpemheader FULL result_requested RESULT result LINK association_links.
+
+ENDCLASS.
+
+CLASS lhc_BPEMObject IMPLEMENTATION.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Bpemheader.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_ZGEN_CE_BPEM_HEADER DEFINITION INHERITING FROM cl_abap_behavior_saver.
+  PROTECTED SECTION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_ZGEN_CE_BPEM_HEADER IMPLEMENTATION.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+  ENDMETHOD.
+
+  METHOD save.
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.

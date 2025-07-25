@@ -1,0 +1,21 @@
+@EndUserText.label: 'header fields for BAPI'
+@ObjectModel.query.implementedBy: 'ABAP:ZCL_GEN_BPEM'
+define root custom entity zgen_ce_bpem_header
+{
+  key BPEM_No             : abap.char(10);
+      CCAT                : abap.char(4);
+      PRIO                : abap.char(1);
+      BRGRU               : abap.char(4);
+      MAINOBJTYPE         : abap.char(10);
+      MAINOBJKEY          : abap.char(70);
+      ORIG_DATE           : abap.dats;
+      ORIG_TIME           : abap.timn;
+      LOGSYS              : abap.char(10);
+      TestRun             : abap.char(1);
+      bpem_objects_flag   : abap_boolean;
+      bpem_case_text_flag : abap_boolean;
+      bpem_message_flag   : abap_boolean;
+      _BPEMObject         : composition [1..*] of zgen_ce_bpem_object;
+      _BPEMCaseText       : composition [1..*] of zgen_ce_bpem_CASE_TEXT;
+      _BPEMMessages       : composition [1..*] of zgen_ce_bpem_MESSAGES;
+}

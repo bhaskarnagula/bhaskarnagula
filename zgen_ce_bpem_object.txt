@@ -1,0 +1,13 @@
+@EndUserText.label: 'structure BAPI_EMMA_CASE_OBJECT'
+define custom entity zgen_ce_bpem_object
+{
+  key BPEM_No     : abap.char(10);
+  key CELEMNAME   : abap.char(32);
+  key REFOBJTYPE  : abap.char(10);
+  key REFSTRUCT   : abap.char(30);
+  key REFFIELD    : abap.char(30);
+  key ID          : abap.char(70);
+      TYPENAME    : abap.char(30);
+      HIDDEN      : abap.char(1);
+      _BPEMHeader : association to parent zgen_ce_bpem_header on $projection.BPEM_No = _BPEMHeader.BPEM_No;
+}

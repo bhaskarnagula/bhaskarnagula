@@ -1,0 +1,82 @@
+CLASS zcl_gen_utilities DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PRIVATE .
+
+  PUBLIC SECTION.
+    TYPES: ty_bapiret2                    TYPE bapiret2,
+           ty_t_bapiret2                  TYPE STANDARD TABLE OF bapiret2 WITH DEFAULT KEY,
+           ty_BAPI_EMMA_CASE_CREATE       TYPE bapi_emma_case_create,
+           ty_BAPI_EMMA_CASE              TYPE bapi_emma_case,
+           ty_bapi_emma_case_create_extra TYPE bapi_emma_case_create_extra,
+           ty_bapi_emma_control           TYPE bapi_emma_control,
+           ty_t_BAPI_EMMA_MSG_LINK        TYPE STANDARD TABLE OF bapi_emma_msg_link WITH DEFAULT KEY,
+           ty_t_BAPI_EMMA_CASE_OBJECT     TYPE STANDARD TABLE OF bapi_emma_case_object WITH DEFAULT KEY,
+           ty_t_BAPI_EMMA_TLINE           TYPE STANDARD TABLE OF bapi_emma_tline WITH DEFAULT KEY,
+           ty_t_bapiparex                 TYPE STANDARD TABLE OF bapiparex WITH DEFAULT KEY.
+    TYPES zemma_cnr TYPE bapi_emma_case-casenr.
+    CONSTANTS: gc_e TYPE c LENGTH 1 VALUE 'E',
+               gc_s TYPE c LENGTH 1 VALUE 'S',
+               gc_w TYPE c LENGTH 1 VALUE 'W',
+               gc_i TYPE c LENGTH 1 VALUE 'I',
+               gc_x TYPE c LENGTH 1 VALUE 'X'.
+
+    CLASS-METHODS get_instance
+      RETURNING VALUE(ro_instance) TYPE REF TO zcl_gen_utilities.
+
+    METHODS call_rfc_create_bpem
+      IMPORTING
+        case_create       TYPE bapi_emma_case_create
+        test_run          TYPE bapi_emma_case-testrun DEFAULT ' '
+        case_create_extra TYPE bapi_emma_case_create_extra OPTIONAL
+        message_mode      TYPE bapi_emma_control-message_mode OPTIONAL
+        check_mode        TYPE bapi_emma_control-check_mode OPTIONAL
+        forward           TYPE bapi_emma_case-forward DEFAULT ' '
+        write_change_doc  TYPE bapi_emma_control-create_change_doc DEFAULT ' '
+      EXPORTING
+        case              TYPE bapi_emma_case-casenr
+      CHANGING
+        objects           TYPE ty_t_bapi_emma_case_object OPTIONAL
+        case_text         TYPE ty_t_bapi_emma_tline OPTIONAL
+        messages          TYPE ty_t_bapi_emma_msg_link OPTIONAL
+        extension_in      TYPE ty_t_bapiparex OPTIONAL
+        return            TYPE ty_t_bapiret2 OPTIONAL.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+    CLASS-DATA go_instance TYPE REF TO zcl_gen_utilities.
+ENDCLASS.
+
+
+
+CLASS zcl_gen_utilities IMPLEMENTATION.
+  METHOD get_instance.
+    " Check if the instance already exists
+    IF go_instance IS NOT BOUND.
+      CREATE OBJECT go_instance.
+    ENDIF.
+    ro_instance = go_instance.
+  ENDMETHOD.
+  METHOD call_rfc_create_bpem.
+
+    " Call the function module
+    CALL FUNCTION 'BAPI_EMMA_CASE_CREATE' DESTINATION 'NONE'
+      EXPORTING
+        case_create       = case_create
+        test_run          = test_run
+        case_create_extra = case_create_extra
+        message_mode      = message_mode
+        check_mode        = check_mode
+        forward           = forward
+        write_change_doc  = write_change_doc
+      IMPORTING
+        case              = case
+      TABLES
+        objects           = objects
+        case_text         = case_text
+        messages          = messages
+        extension_in      = extension_in
+        return            = return.
+
+  ENDMETHOD.
+ENDCLASS.

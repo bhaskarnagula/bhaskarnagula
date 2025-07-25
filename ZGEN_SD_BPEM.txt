@@ -1,0 +1,7 @@
+@EndUserText.label: 'BAPI BAPI_EMMA_CASE_CREATE'
+define service ZGEN_SD_BPEM {
+  expose zgen_ce_bpem_header as BPEMHeader;
+  expose zgen_ce_bpem_object as BPEMObject;
+  expose zgen_ce_bpem_CASE_TEXT as BPEMCaseText;
+  expose zgen_ce_bpem_MESSAGES as BPEMMessages;
+}

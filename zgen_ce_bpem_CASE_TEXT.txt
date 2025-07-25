@@ -1,0 +1,8 @@
+@EndUserText.label: 'structure BAPI_EMMA_TLINE'
+define custom entity zgen_ce_bpem_CASE_TEXT
+{
+  key BPEM_No     : abap.char(10);
+  key TDLINE      : abap.char(132);
+      TDFORMAT    : abap.char(2);
+      _BPEMHeader : association to parent zgen_ce_bpem_header on $projection.BPEM_No = _BPEMHeader.BPEM_No;
+}

@@ -1,0 +1,52 @@
+CLASS zcl_bapi_bpem DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    CLASS-METHODS call_rfc_create_bpem
+      IMPORTING
+        case_create       TYPE zcl_gen_utilities=>ty_bapi_emma_case_create
+        test_run          TYPE zcl_gen_utilities=>ty_bapi_emma_case-testrun DEFAULT ' '
+        case_create_extra TYPE zcl_gen_utilities=>ty_bapi_emma_case_create_extra OPTIONAL
+        message_mode      TYPE zcl_gen_utilities=>ty_bapi_emma_control-message_mode OPTIONAL
+        check_mode        TYPE zcl_gen_utilities=>ty_bapi_emma_control-check_mode OPTIONAL
+        forward           TYPE zcl_gen_utilities=>ty_bapi_emma_case-forward DEFAULT ' '
+        write_change_doc  TYPE zcl_gen_utilities=>ty_bapi_emma_control-create_change_doc DEFAULT ' '
+      CHANGING
+        objects           TYPE zcl_gen_utilities=>ty_t_bapi_emma_case_object OPTIONAL
+        case_text         TYPE zcl_gen_utilities=>ty_t_bapi_emma_tline OPTIONAL
+        messages          TYPE zcl_gen_utilities=>ty_t_bapi_emma_msg_link OPTIONAL
+        extension_in      TYPE zcl_gen_utilities=>ty_t_bapiparex OPTIONAL
+        return            TYPE zcl_gen_utilities=>ty_t_bapiret2 OPTIONAL
+      RETURNING VALUE(case) TYPE zcl_gen_utilities=>ty_bapi_emma_case-casenr.
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_bapi_bpem IMPLEMENTATION.
+  METHOD call_rfc_create_bpem.
+    DATA(lo_utilities) = zcl_gen_utilities=>get_instance( ).
+    " Call the method
+    lo_utilities->call_rfc_create_bpem(
+      EXPORTING
+        case_create       = case_create
+        test_run          = test_run
+        case_create_extra = case_create_extra
+        message_mode      = message_mode
+        check_mode        = check_mode
+        forward           = forward
+        write_change_doc  = write_change_doc
+      IMPORTING
+        case              = case
+      CHANGING
+        objects           = objects
+        case_text         = case_text
+        messages          = messages
+        extension_in      = extension_in
+        return            = return ).
+
+  ENDMETHOD.
+ENDCLASS.

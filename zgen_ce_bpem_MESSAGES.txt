@@ -1,0 +1,13 @@
+@EndUserText.label: 'structure BAPI_EMMA_MSG_LINK'
+define custom entity zgen_ce_bpem_MESSAGES
+{
+  key BPEM_No     : abap.char(10);
+  key MSGID       : abap.char(20);
+  key MSGNO       : symsgno;
+  key MSGV1       : abap.char(50);
+      MSGV2       : abap.char(50);
+      MSGV3       : abap.char(50);
+      MSGV4       : abap.char(50);
+      HIDDEN      : abap.char(1);
+      _BPEMHeader : association to parent zgen_ce_bpem_header on $projection.BPEM_No = _BPEMHeader.BPEM_No;
+}
