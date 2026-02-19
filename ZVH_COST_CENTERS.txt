@@ -1,0 +1,15 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Value help for costcenters'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZVH_COST_CENTERS
+  as select from I_CostCenter
+{
+  key I_CostCenter.CostCenter                  as CostCenter,
+      I_CostCenter._Text.CostCenterDescription as Text
+
+}
+where
+      I_CostCenter.ControllingArea              = '1000'
+  and I_CostCenter.ValidityEndDate              >= $session.system_date
+  and I_CostCenter.IsBlkdForPrimaryCostsPosting = ' '

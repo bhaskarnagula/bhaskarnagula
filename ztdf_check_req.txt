@@ -1,0 +1,41 @@
+@EndUserText.label : 'Draft table for entity ZI_PTP_CHECK_REQ'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ztdf_check_req {
+
+  key mandt                     : mandt not null;
+  key supplierinvoice           : re_belnr not null;
+  key fiscalyear                : gjahr not null;
+  documentheadertext            : bktxt;
+  documentdate                  : invdt;
+  invoicingparty                : lifre;
+  documentcurrency              : waers;
+  currency                      : waers;
+  @Semantics.amount.currencyCode : 'ztdf_check_req.documentcurrency'
+  invoicegrossamount            : rmwwr;
+  companycode                   : bukrs;
+  supplierinvoiceidbyinvcgparty : xblnr1;
+  doctype                       : abap.char(1);
+  costcenter                    : kostl;
+  wbselementinternalid          : ps_psp_pnr;
+  glaccount                     : saknr;
+  functionalarea                : fkber;
+  purchaseorder                 : ebeln;
+  purchaseorderitem             : ebelp;
+  purchaseorderquantityunit     : bstme;
+  quantityunit                  : bstme;
+  @Semantics.quantity.unitOfMeasure : 'ztdf_check_req.purchaseorderquantityunit'
+  quantityinpurchaseorderunit   : menge_d;
+  poref                         : abap.char(1);
+  poy                           : abap_boolean;
+  pon                           : abap_boolean;
+  commenttext                   : abap.string(0);
+  attachment                    : zattachment;
+  filename                      : zfilename;
+  mimetype                      : zmimetype;
+  lastchangedat                 : abp_locinst_lastchange_tstmpl;
+  "%admin"                      : include sych_bdl_draft_admin_inc;
+
+}

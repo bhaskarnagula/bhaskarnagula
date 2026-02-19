@@ -1,0 +1,126 @@
+@Metadata.layer: #CORE
+@UI: {
+  headerInfo: {
+    typeName:        'New Check Request',
+    typeNamePlural:  'New Check Request'
+  }
+}
+annotate entity ZC_PTP_CHECK_REQ with
+{
+
+
+  @UI.facet: [
+     { id: 'Hdr1', purpose: #STANDARD, position: 10, label: 'Invoice details', type: #IDENTIFICATION_REFERENCE },
+     { id: 'FG1', purpose: #STANDARD, position: 20, label: ' ',     type: #FIELDGROUP_REFERENCE, targetQualifier: 'GEN' },
+     { id: 'FG2', purpose: #STANDARD, position: 30, label: 'Attachments',  type: #FIELDGROUP_REFERENCE, targetQualifier: 'ATT'  },
+     { id: 'FG3', purpose: #STANDARD, position: 40, label: 'Special Handling and/or Wire Instructions',    type: #FIELDGROUP_REFERENCE, targetQualifier: 'COMM'}
+   ]
+
+
+
+  @UI.identification: [{ position: 10 , label :'Is this a PO Invoice?' }]
+  @Consumption.valueHelpDefinition: [ { entity: { name: 'ZVH_YES_NO', element: 'domvalue_l' } } ]
+  PoRef;
+
+  @Consumption.valueHelpDefinition: [ { entity: { name: 'ZVH_INV_CRE', element: 'domvalue_l' } } ]
+  @UI.identification: [{ position: 20 , label :'Invoice/Credit Memo?'}]
+  DocType;
+
+  @Search.defaultSearchElement: true
+  @UI.lineItem: [{ position: 10 }]
+  @UI.selectionField: [{ position: 10 }]
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'SupplierInvoice' , name: 'ZC_PTP_CHECK_REQ' } }]
+  SupplierInvoice;
+
+
+  @UI.selectionField: [{ position: 30   }]
+  @UI.lineItem: [{ position: 30 , label : 'Supplier' }]
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 10 }]
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'Supplier' , name: 'ZVH_suppliers' } }]
+  InvoicingParty;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 20 }]
+  DocumentHeaderText;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 30 }]
+  DocumentDate;
+
+  @UI.lineItem: [{ position: 40 }]
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 40 }]
+  InvoiceGrossAmount;
+
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 50 }]
+ @UI.hidden: true
+  DocumentCurrency;
+
+  @UI.fieldGroup: [{ label: 'Currency',qualifier: 'GEN', position: 50 }]
+  Currency;
+
+  @UI.lineItem: [{ position: 50 }]
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 60 }]
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'CompanyCode' , name: 'I_CompanyCodeVH' } }]
+  CompanyCode;
+
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 61 }]
+  @UI.hidden: #( PoY )
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'CostCenter' , name: 'ZVH_COST_CENTERS' } }]
+  CostCenter;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 70 }]
+  SupplierInvoiceIDByInvcgParty;
+
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 80 }]
+  @UI.hidden: #( PoN )
+  QuantityInPurchaseOrderUnit;
+
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 90 }]
+  @UI.hidden: true
+  PurchaseOrderQuantityUnit;
+
+  @UI.fieldGroup: [{ label: 'Unit of Measure:', qualifier: 'GEN', position: 90 }]
+  @UI.hidden: #( PoN )
+  QuantityUnit;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 100 }]
+  @UI.hidden: #( PoN )
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'PurchaseOrder' , name: 'ZVH_PUrchase_ORDER' } }]
+  PurchaseOrder;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 110 }]
+  @UI.hidden: #( PoN )
+  @Consumption.valueHelpDefinition: [{ entity : { element: 'PurchaseOrderItem' , name: 'ZVH_PUrchase_ORDER_ITEM' } }]
+  @Consumption.valueHelpDefinition: [{additionalBinding: [{ element: 'PurchaseOrder', localElement: 'PurchaseOrder' }]}]
+  PurchaseOrderItem;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 120 }]
+  @UI.hidden: #( PoY )
+  GLAccount;
+
+  @UI.fieldGroup: [{ qualifier: 'GEN', position: 130 }]
+  @UI.hidden: #( PoY )
+  FunctionalArea;
+
+  @UI.fieldGroup: [{ label : 'WBS Element',qualifier: 'GEN', position: 140 }]
+  @UI.hidden: #( PoY )
+   @Consumption.valueHelpDefinition: [{ entity : { element: 'posid' , name: 'ZVH_WBS_ELEMENT_EXT' } }]
+  WBSElement;
+
+  @UI.fieldGroup: [{ label:'Special Handling and/or Wire Instructions' ,qualifier: 'COMM', position: 10, importance :#HIGH }]
+  @UI.multiLineText: true
+  CommentText;
+  @UI.fieldGroup: [{ label:'Attachments',qualifier: 'ATT', position: 10 }]
+  Attachment;
+  @UI.fieldGroup: [{ label:'FileName',qualifier: 'ATT', position: 20 }]
+  @UI.hidden: true
+  FileName;
+  @UI.fieldGroup: [{ label:'MineType',qualifier: 'ATT', position: 30 }]
+  @UI.hidden: true
+  MimeType;
+
+
+
+}

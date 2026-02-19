@@ -1,0 +1,51 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Projection view for Check request'
+@Search.searchable: true
+@Metadata.allowExtensions: true
+define root view entity ZC_PTP_CHECK_REQ
+  provider contract transactional_query
+  as projection on ZI_PTP_CHECK_REQ
+
+{
+          //key cuuid,
+          @Search.defaultSearchElement: true
+  key     SupplierInvoice,
+  key     FiscalYear,
+          DocumentHeaderText,
+          DocumentDate,
+          @EndUserText.label: 'Supplier'
+          @ObjectModel.text.element: [ 'SupplierName' ]
+          InvoicingParty,
+          _Supplier.SupplierName,
+          DocumentCurrency,
+          Currency,
+          @Semantics.amount.currencyCode: 'DocumentCurrency'
+          InvoiceGrossAmount,
+          DocType,
+          CompanyCode,
+          SupplierInvoiceIDByInvcgParty,
+          CostCenter,
+          //      WBSElementInternalID,
+
+          GLAccount,
+          FunctionalArea,
+          PurchaseOrder,
+          PurchaseOrderItem,
+          PurchaseOrderQuantityUnit,
+          QuantityUnit,
+          @Semantics.quantity.unitOfMeasure: 'PurchaseOrderQuantityUnit'
+          QuantityInPurchaseOrderUnit,
+          PoRef,
+          PoY,
+          PoN,
+          // WBSElement,
+          CommentText,
+          Attachment,
+          FileName,
+          MimeType,
+          LastChangedAt,
+          _Supplier
+
+
+}

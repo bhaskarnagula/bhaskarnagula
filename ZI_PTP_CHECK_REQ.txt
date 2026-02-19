@@ -1,0 +1,78 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Root entity for check request'
+define root view entity ZI_PTP_CHECK_REQ
+  as select from    I_SupplierInvoiceAPI01
+    left outer join I_SuplrInvoiceItemGLAcctAPI01 on  I_SupplierInvoiceAPI01.SupplierInvoice = I_SuplrInvoiceItemGLAcctAPI01.SupplierInvoice
+                                                  and I_SupplierInvoiceAPI01.FiscalYear      = I_SuplrInvoiceItemGLAcctAPI01.FiscalYear
+    left outer join I_SuplrInvcItemPurOrdRefAPI01 on  I_SupplierInvoiceAPI01.SupplierInvoice = I_SuplrInvcItemPurOrdRefAPI01.SupplierInvoice
+                                                  and I_SupplierInvoiceAPI01.FiscalYear      = I_SuplrInvcItemPurOrdRefAPI01.FiscalYear
+    left outer join ZI_PTP_CHECK_OTH              on  I_SupplierInvoiceAPI01.SupplierInvoice = ZI_PTP_CHECK_OTH.Belnr
+                                                  and I_SupplierInvoiceAPI01.FiscalYear      = ZI_PTP_CHECK_OTH.Gjahr
+  // left outer join ZVH_WBS_ELEMENT              on I_SuplrInvoiceItemGLAcctAPI01.WBSElementInternalID = ZVH_WBS_ELEMENT.pspnr
+  association [0..1] to I_Supplier as _Supplier on I_SupplierInvoiceAPI01.InvoicingParty = _Supplier.Supplier
+
+{
+         //key ZI_PTP_CHECK_OTH.cuuid,
+  key    I_SupplierInvoiceAPI01.SupplierInvoice,
+  key    I_SupplierInvoiceAPI01.FiscalYear,
+         I_SupplierInvoiceAPI01.DocumentHeaderText,
+         I_SupplierInvoiceAPI01.DocumentDate,
+         I_SupplierInvoiceAPI01.InvoicingParty,
+         I_SupplierInvoiceAPI01.DocumentCurrency,
+         I_SupplierInvoiceAPI01.DocumentCurrency                 as Currency,
+         @Semantics.amount.currencyCode: 'DocumentCurrency'
+         I_SupplierInvoiceAPI01.InvoiceGrossAmount,
+         I_SupplierInvoiceAPI01.CompanyCode,
+         I_SupplierInvoiceAPI01.SupplierInvoiceIDByInvcgParty,
+         case I_SupplierInvoiceAPI01.IsInvoice
+          when 'X' then
+          'I'
+          else
+          'C'
+          end                                                    as DocType,
+         I_SuplrInvoiceItemGLAcctAPI01.CostCenter,
+         I_SuplrInvoiceItemGLAcctAPI01.WBSElementInternalID,
+         //cast ( ZVH_WBS_ELEMENT.posid as abap.char(40) ) as WBSElement,
+         I_SuplrInvoiceItemGLAcctAPI01.GLAccount,
+         I_SuplrInvoiceItemGLAcctAPI01.FunctionalArea,
+         I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrder,
+         I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrderItem,
+         I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrderQuantityUnit,
+         I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrderQuantityUnit as QuantityUnit,
+         @Semantics.quantity.unitOfMeasure: 'PurchaseOrderQuantityUnit'
+         I_SuplrInvcItemPurOrdRefAPI01.QuantityInPurchaseOrderUnit,
+         case
+         when I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrder is not null then 'Y'
+         else 'N'
+         end                                                     as PoRef,
+
+         case
+         when I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrder is not null then
+         cast( 'X' as abap_boolean preserving type )
+         else cast( ' '  as abap_boolean preserving type )
+         end                                                     as PoY,
+
+         case
+         when I_SuplrInvcItemPurOrdRefAPI01.PurchaseOrder is not null then
+         cast( ' ' as abap_boolean preserving type )
+         else cast( 'X'  as abap_boolean preserving type )
+         end                                                     as PoN,
+
+         ZI_PTP_CHECK_OTH.Comments                               as CommentText,
+         @Semantics.largeObject : { mimeType: 'MimeType',
+                                    fileName: 'FileName',
+                                    contentDispositionPreference: #INLINE }
+         ZI_PTP_CHECK_OTH.Attachment                             as Attachment,
+         ZI_PTP_CHECK_OTH.FileName                               as FileName,
+         @Semantics.mimeType: true
+         ZI_PTP_CHECK_OTH.MimeType                               as MimeType,
+         @Semantics.systemDateTime.lastChangedAt: true
+         ZI_PTP_CHECK_OTH.lastchangedat,
+         _Supplier
+         //      _Costcenter
+
+}
+where
+      I_SupplierInvoiceAPI01.CreatedByUser       = $session.user
+  and I_SupplierInvoiceAPI01.AssignmentReference = 'Check Request'

@@ -1,0 +1,146 @@
+CLASS lhc_ZI_PTP_CHECK_REQ DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR zi_ptp_check_req RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE zi_ptp_check_req.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE zi_ptp_check_req.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE zi_ptp_check_req.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ zi_ptp_check_req RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK zi_ptp_check_req.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR zi_ptp_check_req RESULT result.
+
+    METHODS get_global_features FOR GLOBAL FEATURES
+      IMPORTING REQUEST requested_features FOR zi_ptp_check_req RESULT result.
+
+    METHODS defaultforcreate FOR READ
+      IMPORTING keys FOR FUNCTION zi_ptp_check_req~defaultforcreate RESULT result.
+    METHODS setfields FOR MODIFY
+      IMPORTING keys FOR ACTION zi_ptp_check_req~setfields RESULT result.
+    METHODS precheck_create FOR PRECHECK
+      IMPORTING entities FOR CREATE zi_ptp_check_req.
+    METHODS set_defaults FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR zi_ptp_check_req~set_defaults.
+
+    METHODS validate_data FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zi_ptp_check_req~validate_data.
+
+ENDCLASS.
+
+CLASS lhc_ZI_PTP_CHECK_REQ IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD create.
+  ENDMETHOD.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD lock.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITIES OF zi_ptp_check_req IN LOCAL MODE
+        ENTITY zi_ptp_check_req
+          ALL FIELDS
+           WITH CORRESPONDING #( keys )
+         RESULT DATA(lt_CHECK_REQ)
+         FAILED failed.
+
+    result =
+      VALUE #( FOR ls_CHECK_REQ IN lt_CHECK_REQ
+        ( %key = ls_CHECK_REQ-%key
+          %features-%action-Setfields = COND #( WHEN ls_CHECK_REQ-PoRef = abap_true
+                                                        THEN if_abap_behv=>fc-o-disabled
+                                                        ELSE if_abap_behv=>fc-o-enabled )
+         ) ).
+  ENDMETHOD.
+
+  METHOD get_global_features.
+  ENDMETHOD.
+
+  METHOD DefaultForCreate.
+  ENDMETHOD.
+
+  METHOD Setfields.
+  ENDMETHOD.
+
+  METHOD precheck_create.
+  ENDMETHOD.
+
+  METHOD set_defaults.
+    READ ENTITIES OF zi_ptp_check_req IN LOCAL MODE
+        ENTITY zi_ptp_check_req
+          FIELDS ( PoRef DocType )
+             WITH CORRESPONDING #( keys )
+           RESULT DATA(lt_travels).
+
+    LOOP AT lt_travels ASSIGNING FIELD-SYMBOL(<fs_travel>).
+      <fs_travel>-PoRef = 'Y'.
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zi_ptp_check_req IN LOCAL MODE
+      ENTITY zi_ptp_check_req
+        UPDATE FIELDS ( PoRef )
+        WITH VALUE #( FOR travel IN lt_travels  (
+                           %tky      = travel-%tky
+                           PoRef  = travel-PoRef ) ).
+  ENDMETHOD.
+
+  METHOD validate_data.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_ZI_PTP_CHECK_REQ DEFINITION INHERITING FROM cl_abap_behavior_saver.
+  PROTECTED SECTION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_ZI_PTP_CHECK_REQ IMPLEMENTATION.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+  ENDMETHOD.
+
+  METHOD save.
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.

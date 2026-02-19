@@ -1,0 +1,11 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Value help for POs'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZVH_PUrchase_ORDER
+  as select distinct from I_PurchaseOrderItemAPI01
+{
+  key PurchaseOrder,
+      PurchaseOrderItemText
+
+}

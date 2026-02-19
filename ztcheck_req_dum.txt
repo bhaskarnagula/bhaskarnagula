@@ -1,0 +1,18 @@
+@EndUserText.label : 'Req Dum table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ztcheck_req_dum {
+
+  key mandt     : abap.clnt not null;
+  key cuuid     : sysuuid_x16 not null;
+  key belnr     : belnr_d not null;
+  key gjahr     : gjahr not null;
+  comments      : abap.string(0);
+  attachment    : zattachment;
+  mime_type     : zmimetype;
+  file_name     : zfilename;
+  lastchangedat : abp_locinst_lastchange_tstmpl;
+
+}

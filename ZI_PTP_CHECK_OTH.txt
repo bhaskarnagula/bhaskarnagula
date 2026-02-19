@@ -1,0 +1,21 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Check request other fields'
+define view entity ZI_PTP_CHECK_OTH
+  as select from ztcheck_req_dum
+{
+  key cuuid,
+  key belnr      as Belnr,
+  key gjahr      as Gjahr,
+      comments   as Comments,
+      @Semantics.largeObject:
+                    { mimeType: 'MimeType',
+                      fileName: 'Filename',
+                      contentDispositionPreference: #INLINE }
+      attachment as Attachment,
+      @Semantics.mimeType: true
+      mime_type  as MimeType,      
+      file_name  as FileName,
+	  lastchangedat
+
+}

@@ -1,0 +1,38 @@
+unmanaged implementation in class zbp_i_ptp_check_req unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_PTP_CHECK_REQ //alias <alias_name>
+draft table ztdf_check_req
+lock master
+total etag LastChangedAt
+authorization master ( instance )
+etag master LastChangedAt
+{
+  create ( features : global, precheck );
+  // create {default function GetDefaultsForCreate; }
+  update ( features : instance );
+  delete;
+
+  //field ( numbering : managed ) cUUID;
+//  field ( mandatory : create ) DocumentHeaderText, DocumentDate, InvoiceGrossAmount,
+//  Currency, SupplierInvoiceIDByInvcgParty;
+  field ( readonly : update ) FiscalYear, SUPPLIERINVOICE;
+  field ( features : instance ) PoRef, DocType;
+  side effects { field PoRef affects field *; }
+
+  action ( features : instance ) Setfields result [1] $self;
+  static function DefaultForCreate result [1] $self;
+
+  validation validate_data on save { create; }
+  determination set_defaults on modify { create; }
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation validate_data; }
+
+}
